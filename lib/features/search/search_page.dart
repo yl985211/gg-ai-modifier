@@ -1,4 +1,4 @@
-/// 内存搜索页面 - 紧凑设计
+/// Memory Search Page - compact layout
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -6,22 +6,22 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/models/memory_result.dart';
 import '../process/process_selector.dart';
 
-/// 搜索类型
+/// Search types
 enum SearchType { exact, fuzzy, range, aob }
 
-/// 当前搜索类型 Provider
+/// Current search type provider
 final searchTypeProvider = StateProvider<SearchType>((ref) => SearchType.exact);
 
-/// 搜索结果 Provider
+/// Search results provider
 final searchResultsProvider = StateProvider<List<MemoryResult>>((ref) => []);
 
-/// 数据类型 Provider
+/// Data type provider
 final dataTypeProvider = StateProvider<DataType>((ref) => DataType.dword);
 
-/// 控制面板是否折叠
+/// Controls collapsed provider
 final controlsCollapsedProvider = StateProvider<bool>((ref) => false);
 
-/// 内存搜索页面
+/// Memory search page
 class SearchPage extends ConsumerStatefulWidget {
   const SearchPage({super.key});
 
@@ -47,7 +47,7 @@ class _SearchPageState extends ConsumerState<SearchPage> {
     final attachedProcess = ref.read(attachedProcessProvider);
     if (attachedProcess == null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('请先附加游戏进程')),
+        const SnackBar(content: Text('Please attach to a game process first')),
       );
       return;
     }
@@ -67,7 +67,7 @@ class _SearchPageState extends ConsumerState<SearchPage> {
           final max = int.tryParse(_maxController.text);
           if (min == null || max == null) {
             ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text('请输入有效的范围值')),
+              const SnackBar(content: Text('Please enter a valid range')),
             );
             return;
           }
@@ -87,7 +87,7 @@ class _SearchPageState extends ConsumerState<SearchPage> {
           final pattern = _valueController.text.trim();
           if (pattern.isEmpty) {
             ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text('请输入特征码')),
+              const SnackBar(content: Text('Please enter an AOB pattern')),
             );
             return;
           }
@@ -99,7 +99,7 @@ class _SearchPageState extends ConsumerState<SearchPage> {
           final value = _valueController.text.trim();
           if (value.isEmpty) {
             ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text('请输入搜索值')),
+              const SnackBar(content: Text('Please enter a search value')),
             );
             return;
           }
@@ -117,7 +117,7 @@ class _SearchPageState extends ConsumerState<SearchPage> {
 
           if (searchValue == null) {
             ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text('请输入有效的数值')),
+              const SnackBar(content: Text('Please enter a valid value')),
             );
             return;
           }
@@ -134,20 +134,20 @@ class _SearchPageState extends ConsumerState<SearchPage> {
         }).toList();
 
         ref.read(searchResultsProvider.notifier).state = results;
-        // 有结果后自动折叠控制面板
+        // Auto-collapse controls when results exist
         if (results.isNotEmpty) {
           ref.read(controlsCollapsedProvider.notifier).state = true;
         }
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('找到 ${results.length} 个结果'),
+            content: Text('Found ${results.length} results'),
             duration: const Duration(seconds: 1),
           ),
         );
       }
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('搜索失败: $e')),
+        SnackBar(content: Text('Search failed: $e')),
       );
     }
   }
@@ -162,12 +162,12 @@ class _SearchPageState extends ConsumerState<SearchPage> {
       });
       if (success == true) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('已修改 ${result.address} = $newValue')),
+          SnackBar(content: Text('Set ${result.address} = $newValue')),
         );
       }
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('写入失败: $e')),
+        SnackBar(content: Text('Write failed: $e')),
       );
     }
   }
@@ -189,12 +189,12 @@ class _SearchPageState extends ConsumerState<SearchPage> {
           return r;
         }).toList();
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('已冻结 ${result.address} = $value')),
+          SnackBar(content: Text('Frozen ${result.address} = $value')),
         );
       }
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('冻结失败: $e')),
+        SnackBar(content: Text('Freeze failed: $e')),
       );
     }
   }
@@ -213,11 +213,11 @@ class _SearchPageState extends ConsumerState<SearchPage> {
         return r;
       }).toList();
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('已解冻 ${result.address}')),
+        SnackBar(content: Text('Unfrozen ${result.address}')),
       );
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('解冻失败: $e')),
+        SnackBar(content: Text('Unfreeze failed: $e')),
       );
     }
   }
@@ -232,9 +232,9 @@ class _SearchPageState extends ConsumerState<SearchPage> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('内存搜索'),
+        title: const Text('Memory Search'),
         actions: [
-          // 折叠/展开按钮
+          // Collapse/expand button
           if (results.isNotEmpty)
             IconButton(
               icon: Icon(collapsed ? Icons.expand_more : Icons.expand_less),
@@ -246,13 +246,13 @@ class _SearchPageState extends ConsumerState<SearchPage> {
       ),
       body: Column(
         children: [
-          // 进程状态 + 搜索类型 (紧凑单行)
+          // Top bar: process status + search type + data type
           _buildTopBar(attachedProcess, searchType, dataType, collapsed),
-          // 搜索输入区域 (可折叠)
+          // Search input area (collapsible)
           if (!collapsed) _buildSearchInput(searchType, dataType),
-          // 结果统计 + 折叠时的搜索按钮
+          // Result bar + quick search when collapsed
           if (results.isNotEmpty) _buildResultBar(results, collapsed, searchType, dataType),
-          // 搜索结果列表
+          // Results list
           Expanded(
             child: results.isEmpty
                 ? _buildEmptyState(attachedProcess)
@@ -263,7 +263,7 @@ class _SearchPageState extends ConsumerState<SearchPage> {
     );
   }
 
-  /// 顶部紧凑栏：进程状态 + 搜索类型切换 + 数据类型
+  /// Top bar: process status + search type + data type
   Widget _buildTopBar(
     dynamic attachedProcess,
     SearchType searchType,
@@ -276,7 +276,7 @@ class _SearchPageState extends ConsumerState<SearchPage> {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          // 第一行：进程状态
+          // First row: process status
           GestureDetector(
             onTap: () {
               Navigator.push(
@@ -296,7 +296,7 @@ class _SearchPageState extends ConsumerState<SearchPage> {
                   child: Text(
                     attachedProcess != null
                         ? '${attachedProcess.packageName} (PID:${attachedProcess.pid})'
-                        : '未附加进程 - 点击选择',
+                        : 'No process attached - tap to select',
                     style: TextStyle(
                       color: attachedProcess != null ? Colors.green : Color(0xFFA1887F),
                       fontSize: 12,
@@ -310,17 +310,17 @@ class _SearchPageState extends ConsumerState<SearchPage> {
             ),
           ),
           const SizedBox(height: 6),
-          // 第二行：搜索类型 + 数据类型 + 搜索/重置按钮
+          // Second row: search type + data type + search/reset
           Row(
             children: [
-              // 搜索类型选择
+              // Search type chips
               ...SearchType.values.map((type) {
                 final isSelected = type == searchType;
                 final labels = {
-                  SearchType.exact: '精确',
-                  SearchType.fuzzy: '模糊',
-                  SearchType.range: '范围',
-                  SearchType.aob: '特征码',
+                  SearchType.exact: 'Exact',
+                  SearchType.fuzzy: 'Fuzzy',
+                  SearchType.range: 'Range',
+                  SearchType.aob: 'AOB',
                 };
                 return Padding(
                   padding: const EdgeInsets.only(right: 4),
@@ -338,7 +338,7 @@ class _SearchPageState extends ConsumerState<SearchPage> {
                 );
               }),
               const Spacer(),
-              // 数据类型下拉
+              // Data type dropdown
               Container(
                 height: 32,
                 padding: const EdgeInsets.symmetric(horizontal: 8),
@@ -377,7 +377,7 @@ class _SearchPageState extends ConsumerState<SearchPage> {
     );
   }
 
-  /// 搜索输入区域
+  /// Search input area
   Widget _buildSearchInput(SearchType searchType, DataType dataType) {
     return Container(
       padding: const EdgeInsets.fromLTRB(12, 8, 12, 6),
@@ -395,7 +395,7 @@ class _SearchPageState extends ConsumerState<SearchPage> {
               child: TextField(
                 controller: _minController,
                 decoration: const InputDecoration(
-                  hintText: '最小值',
+                  hintText: 'Min',
                   prefixIcon: Icon(Icons.arrow_downward, size: 16),
                   isDense: true,
                   contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 10),
@@ -412,7 +412,7 @@ class _SearchPageState extends ConsumerState<SearchPage> {
               child: TextField(
                 controller: _maxController,
                 decoration: const InputDecoration(
-                  hintText: '最大值',
+                  hintText: 'Max',
                   prefixIcon: Icon(Icons.arrow_upward, size: 16),
                   isDense: true,
                   contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 10),
@@ -434,14 +434,14 @@ class _SearchPageState extends ConsumerState<SearchPage> {
               spacing: 6,
               runSpacing: 4,
               children: [
-                _fuzzyChip('changed', '已改变'),
-                _fuzzyChip('unchanged', '未改变'),
-                _fuzzyChip('increased', '增大'),
-                _fuzzyChip('decreased', '减小'),
-                _fuzzyChip('greater', '大于'),
-                _fuzzyChip('less', '小于'),
-                _fuzzyChip('equal', '等于'),
-                _fuzzyChip('not_equal', '不等于'),
+                _fuzzyChip('changed', 'Changed'),
+                _fuzzyChip('unchanged', 'Unchanged'),
+                _fuzzyChip('increased', 'Increased'),
+                _fuzzyChip('decreased', 'Decreased'),
+                _fuzzyChip('greater', 'Greater'),
+                _fuzzyChip('less', 'Less'),
+                _fuzzyChip('equal', 'Equal'),
+                _fuzzyChip('not_equal', 'Not Equal'),
               ],
             ),
             const SizedBox(height: 8),
@@ -456,7 +456,7 @@ class _SearchPageState extends ConsumerState<SearchPage> {
               child: TextField(
                 controller: _valueController,
                 decoration: const InputDecoration(
-                  hintText: '特征码 (如: 48 89 5C 24 ? 48)',
+                  hintText: 'AOB pattern (e.g.: 48 89 5C 24 ? 48)',
                   prefixIcon: Icon(Icons.fingerprint, size: 16),
                   isDense: true,
                   contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 10),
@@ -477,7 +477,7 @@ class _SearchPageState extends ConsumerState<SearchPage> {
               child: TextField(
                 controller: _valueController,
                 decoration: const InputDecoration(
-                  hintText: '输入数值',
+                  hintText: 'Enter value',
                   prefixIcon: Icon(Icons.numbers, size: 16),
                   isDense: true,
                   contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 10),
@@ -493,7 +493,7 @@ class _SearchPageState extends ConsumerState<SearchPage> {
     }
   }
 
-  /// 搜索 + 重置按钮
+  /// Search + Reset buttons
   Widget _buildSearchResetButtons() {
     return Row(
       mainAxisSize: MainAxisSize.min,
@@ -530,7 +530,7 @@ class _SearchPageState extends ConsumerState<SearchPage> {
     );
   }
 
-  /// 模糊搜索 Chip
+  /// Fuzzy search chip
   Widget _fuzzyChip(String value, String label) {
     final isSelected = _selectedFuzzyComparison == value;
     return ChoiceChip(
@@ -548,7 +548,7 @@ class _SearchPageState extends ConsumerState<SearchPage> {
     );
   }
 
-  /// 结果统计栏 (折叠时也显示快速搜索按钮)
+  /// Result bar (shows quick search when collapsed)
   Widget _buildResultBar(
     List<MemoryResult> results,
     bool collapsed,
@@ -563,23 +563,23 @@ class _SearchPageState extends ConsumerState<SearchPage> {
           const Icon(Icons.list_alt, size: 16, color: Color(0xFF8D6E63)),
           const SizedBox(width: 6),
           Text(
-            '${results.length} 个结果',
+            '${results.length} results',
             style: const TextStyle(color: Color(0xFF3E2723), fontSize: 13, fontWeight: FontWeight.bold),
           ),
           if (results.length > 100)
             const Text(
-              ' (显示前100)',
+              ' (showing first 100)',
               style: TextStyle(color: Color(0xFFA1887F), fontSize: 11),
             ),
           const Spacer(),
-          // 折叠时显示快速搜索按钮
+          // Quick search when collapsed
           if (collapsed) ...[
             SizedBox(
               height: 28,
               child: ElevatedButton.icon(
                 onPressed: _performSearch,
                 icon: const Icon(Icons.search, size: 16),
-                label: const Text('搜索', style: TextStyle(fontSize: 12)),
+                label: const Text('Search', style: TextStyle(fontSize: 12)),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: const Color(0xFF8D6E63),
                   padding: const EdgeInsets.symmetric(horizontal: 12),
@@ -605,7 +605,7 @@ class _SearchPageState extends ConsumerState<SearchPage> {
     );
   }
 
-  /// 空状态
+  /// Empty state
   Widget _buildEmptyState(dynamic attachedProcess) {
     return Center(
       child: Column(
@@ -618,7 +618,7 @@ class _SearchPageState extends ConsumerState<SearchPage> {
           ),
           const SizedBox(height: 12),
           Text(
-            attachedProcess == null ? '请先附加游戏进程' : '输入数值开始搜索',
+            attachedProcess == null ? 'Please attach to a game process' : 'Enter a value to start searching',
             style: const TextStyle(color: Color(0xFFA1887F), fontSize: 14),
           ),
         ],
@@ -626,7 +626,7 @@ class _SearchPageState extends ConsumerState<SearchPage> {
     );
   }
 
-  /// 结果列表
+  /// Result list
   Widget _buildResultList(List<MemoryResult> results) {
     final displayResults = results.length > 100
         ? results.sublist(0, 100)
@@ -641,7 +641,7 @@ class _SearchPageState extends ConsumerState<SearchPage> {
     );
   }
 
-  /// 紧凑的结果项
+  /// Compact result item
   Widget _buildCompactResultItem(MemoryResult result) {
     return Card(
       margin: const EdgeInsets.symmetric(vertical: 2),
@@ -653,7 +653,7 @@ class _SearchPageState extends ConsumerState<SearchPage> {
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
           child: Row(
             children: [
-              // 状态图标
+              // Status icon
               Icon(
                 result.isFrozen ? Icons.lock : Icons.memory,
                 color: result.isFrozen
@@ -664,7 +664,7 @@ class _SearchPageState extends ConsumerState<SearchPage> {
                 size: 18,
               ),
               const SizedBox(width: 10),
-              // 地址
+              // Address
               Expanded(
                 flex: 3,
                 child: Text(
@@ -676,7 +676,7 @@ class _SearchPageState extends ConsumerState<SearchPage> {
                   ),
                 ),
               ),
-              // 值
+              // Value
               Expanded(
                 flex: 2,
                 child: Text(
@@ -686,7 +686,7 @@ class _SearchPageState extends ConsumerState<SearchPage> {
                 ),
               ),
               const SizedBox(width: 8),
-              // 类型标签
+              // Type label
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                 decoration: BoxDecoration(
@@ -699,7 +699,7 @@ class _SearchPageState extends ConsumerState<SearchPage> {
                 ),
               ),
               const SizedBox(width: 4),
-              // 操作按钮
+              // Actions
               PopupMenuButton<String>(
                 icon: const Icon(Icons.more_vert, size: 18),
                 onSelected: (action) {
@@ -717,10 +717,10 @@ class _SearchPageState extends ConsumerState<SearchPage> {
                   }
                 },
                 itemBuilder: (context) => [
-                  const PopupMenuItem(value: 'edit', child: Text('修改值')),
+                  const PopupMenuItem(value: 'edit', child: Text('Edit value')),
                   PopupMenuItem(
                     value: 'freeze',
-                    child: Text(result.isFrozen ? '解冻' : '冻结'),
+                    child: Text(result.isFrozen ? 'Unfreeze' : 'Freeze'),
                   ),
                 ],
               ),
@@ -738,13 +738,13 @@ class _SearchPageState extends ConsumerState<SearchPage> {
       context: context,
       builder: (context) => AlertDialog(
         backgroundColor: const Color(0xFFFFF9F0),
-        title: const Text('修改内存值'),
+        title: const Text('Edit memory value'),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              '地址: ${result.address}',
+              'Address: ${result.address}',
               style: const TextStyle(
                 fontFamily: 'monospace',
                 fontSize: 12,
@@ -755,8 +755,8 @@ class _SearchPageState extends ConsumerState<SearchPage> {
             TextField(
               controller: controller,
               decoration: const InputDecoration(
-                labelText: '新值',
-                hintText: '输入要修改的值',
+                labelText: 'New value',
+                hintText: 'Enter the value to set',
               ),
               keyboardType: TextInputType.number,
               autofocus: true,
@@ -766,7 +766,7 @@ class _SearchPageState extends ConsumerState<SearchPage> {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('取消'),
+            child: const Text('Cancel'),
           ),
           ElevatedButton(
             onPressed: () {
@@ -788,7 +788,7 @@ class _SearchPageState extends ConsumerState<SearchPage> {
               }
               Navigator.pop(context);
             },
-            child: const Text('修改'),
+            child: const Text('Set'),
           ),
         ],
       ),
@@ -802,13 +802,13 @@ class _SearchPageState extends ConsumerState<SearchPage> {
       context: context,
       builder: (context) => AlertDialog(
         backgroundColor: const Color(0xFFFFF9F0),
-        title: const Text('冻结内存值'),
+        title: const Text('Freeze memory value'),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              '地址: ${result.address}',
+              'Address: ${result.address}',
               style: const TextStyle(
                 fontFamily: 'monospace',
                 fontSize: 12,
@@ -819,8 +819,8 @@ class _SearchPageState extends ConsumerState<SearchPage> {
             TextField(
               controller: controller,
               decoration: const InputDecoration(
-                labelText: '冻结值',
-                hintText: '输入要冻结的值',
+                labelText: 'Freeze value',
+                hintText: 'Enter the value to freeze',
               ),
               keyboardType: TextInputType.number,
               autofocus: true,
@@ -830,7 +830,7 @@ class _SearchPageState extends ConsumerState<SearchPage> {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('取消'),
+            child: const Text('Cancel'),
           ),
           ElevatedButton(
             onPressed: () {
@@ -852,10 +852,9 @@ class _SearchPageState extends ConsumerState<SearchPage> {
               }
               Navigator.pop(context);
             },
-            child: const Text('冻结'),
+            child: const Text('Freeze'),
           ),
         ],
       ),
     );
   }
-}
