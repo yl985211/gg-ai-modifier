@@ -75,7 +75,7 @@ class _HomePageState extends ConsumerState<HomePage> {
   void _navigateToPage(String page) {
     switch (page) {
       case 'home':
-        // 不切换页面，只确保应用在前台
+        // 不切换页面，只确���应用在前台
         break;
       case 'chat':
         ref.read(currentPageProvider.notifier).state = 0;
@@ -123,22 +123,22 @@ class _HomePageState extends ConsumerState<HomePage> {
           NavigationDestination(
             icon: Icon(Icons.history),
             selectedIcon: Icon(Icons.history, color: Color(0xFF8D6E63)),
-            label: '对话记录',
+            label: 'Chat History',
           ),
           NavigationDestination(
             icon: Icon(Icons.extension),
             selectedIcon: Icon(Icons.extension, color: Color(0xFF8D6E63)),
-            label: '插件中心',
+            label: 'Plugin Center',
           ),
           NavigationDestination(
             icon: Icon(Icons.code),
             selectedIcon: Icon(Icons.code, color: Color(0xFF8D6E63)),
-            label: '脚本库',
+            label: 'Script Library',
           ),
           NavigationDestination(
             icon: Icon(Icons.settings),
             selectedIcon: Icon(Icons.settings, color: Color(0xFF8D6E63)),
-            label: '设置',
+            label: 'Settings',
           ),
         ],
       ),
