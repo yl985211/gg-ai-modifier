@@ -1,4 +1,4 @@
-[中文文档](README/v2.0.0-cn_README.md) | [英文文档](README/v2.0.0-en_README.md) | [历史更新日志](update/)
+[中文文档](README/v2.0.0-cn_README.md) | [English Document](README/v2.0.0-en_README.md) | [历史更新日志](update/)
 
 ---
 
