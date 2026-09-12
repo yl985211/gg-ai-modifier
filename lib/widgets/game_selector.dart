@@ -86,17 +86,17 @@ class _GameSelectorState extends State<GameSelector> {
             margin: const EdgeInsets.symmetric(horizontal: 12),
             padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
-              color: const Color(0xFF8D6E63).withOpacity(0.1),
+              color: const Color(0xFF3D5AFE).withOpacity(0.1),
               borderRadius: BorderRadius.circular(8),
               border: Border.all(
-                color: const Color(0xFF8D6E63).withOpacity(0.3),
+                color: const Color(0xFF3D5AFE).withOpacity(0.3),
               ),
             ),
             child: Row(
               children: [
                 const Icon(
                   Icons.check_circle,
-                  color: Color(0xFF8D6E63),
+                  color: Color(0xFF3D5AFE),
                   size: 20,
                 ),
                 const SizedBox(width: 8),
@@ -112,7 +112,7 @@ class _GameSelectorState extends State<GameSelector> {
                         'PID: ${widget.selectedProcess!.pid}',
                         style: const TextStyle(
                           fontSize: 12,
-                          color: Color(0xFFA1887F),
+                          color: Color(0xFF4A6572),
                         ),
                       ),
                     ],
@@ -133,7 +133,7 @@ class _GameSelectorState extends State<GameSelector> {
         else if (_filteredProcesses.isEmpty)
           const Padding(
             padding: EdgeInsets.all(24),
-            child: Text('未找到进程', style: TextStyle(color: Color(0xFFA1887F))),
+            child: Text('未找到进程', style: TextStyle(color: Color(0xFF4A6572))),
           )
         else
           SizedBox(
@@ -147,7 +147,7 @@ class _GameSelectorState extends State<GameSelector> {
                 return ListTile(
                   leading: Icon(
                     isSelected ? Icons.check_circle : Icons.apps,
-                    color: isSelected ? const Color(0xFF8D6E63) : Color(0xFFA1887F),
+                    color: isSelected ? const Color(0xFF3D5AFE) : Color(0xFF4A6572),
                     size: 20,
                   ),
                   title: Text(
@@ -156,7 +156,7 @@ class _GameSelectorState extends State<GameSelector> {
                   ),
                   subtitle: Text(
                     'PID: ${process.pid}',
-                    style: const TextStyle(fontSize: 12, color: Color(0xFFA1887F)),
+                    style: const TextStyle(fontSize: 12, color: Color(0xFF4A6572)),
                   ),
                   trailing: process.isSystem
                       ? const Chip(

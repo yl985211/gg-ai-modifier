@@ -249,7 +249,7 @@ class _ScriptPageState extends ConsumerState<ScriptPage> {
       appBar: AppBar(
         title: const Row(
           children: [
-            Icon(Icons.code, color: Color(0xFF8D6E63)),
+            Icon(Icons.code, color: Color(0xFF3D5AFE)),
             SizedBox(width: 8),
             Text('脚本库'),
           ],
@@ -288,7 +288,7 @@ class _ScriptPageState extends ConsumerState<ScriptPage> {
           if (_isRunning)
             Container(
               padding: const EdgeInsets.all(12),
-              color: const Color(0xFFFFF9F0),
+              color: const Color(0xFFFFFFFF),
               child: const Row(
                 children: [
                   SizedBox(
@@ -308,13 +308,13 @@ class _ScriptPageState extends ConsumerState<ScriptPage> {
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Icon(Icons.code_off, size: 64, color: Color(0xFFA1887F)),
+                        Icon(Icons.code_off, size: 64, color: Color(0xFF4A6572)),
                         SizedBox(height: 16),
-                        Text('暂无脚本', style: TextStyle(color: Color(0xFFA1887F))),
+                        Text('暂无脚本', style: TextStyle(color: Color(0xFF4A6572))),
                         SizedBox(height: 8),
                         Text(
                           '点击右上角 + 创建新脚本',
-                          style: TextStyle(color: Color(0xFFA1887F), fontSize: 12),
+                          style: TextStyle(color: Color(0xFF4A6572), fontSize: 12),
                         ),
                       ],
                     ),
@@ -354,10 +354,10 @@ class _ScriptPageState extends ConsumerState<ScriptPage> {
                         ? Icons.smart_toy
                         : Icons.person,
                     color: script.isBuiltin
-                        ? const Color(0xFF6D4C41)
+                        ? const Color(0xFF536DFE)
                         : script.isAiGenerated
-                        ? const Color(0xFF8D6E63)
-                        : Color(0xFFA1887F),
+                        ? const Color(0xFF3D5AFE)
+                        : Color(0xFF4A6572),
                     size: 20,
                   ),
                   const SizedBox(width: 8),
@@ -423,7 +423,7 @@ class _ScriptPageState extends ConsumerState<ScriptPage> {
               const SizedBox(height: 8),
               Text(
                 script.description,
-                style: const TextStyle(color: Color(0xFFA1887F), fontSize: 13),
+                style: const TextStyle(color: Color(0xFF4A6572), fontSize: 13),
               ),
               const SizedBox(height: 8),
               Row(
@@ -436,14 +436,14 @@ class _ScriptPageState extends ConsumerState<ScriptPage> {
                         vertical: 2,
                       ),
                       decoration: BoxDecoration(
-                        color: const Color(0xFF8D6E63).withOpacity(0.2),
+                        color: const Color(0xFF3D5AFE).withOpacity(0.2),
                         borderRadius: BorderRadius.circular(4),
                       ),
                       child: Text(
                         tag,
                         style: const TextStyle(
                           fontSize: 11,
-                          color: Color(0xFF8D6E63),
+                          color: Color(0xFF3D5AFE),
                         ),
                       ),
                     ),
@@ -452,7 +452,7 @@ class _ScriptPageState extends ConsumerState<ScriptPage> {
                   if (script.executionCount > 0)
                     Text(
                       '已执行 ${script.executionCount} 次',
-                      style: const TextStyle(fontSize: 11, color: Color(0xFFA1887F)),
+                      style: const TextStyle(fontSize: 11, color: Color(0xFF4A6572)),
                     ),
                 ],
               ),
@@ -467,7 +467,7 @@ class _ScriptPageState extends ConsumerState<ScriptPage> {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
-      backgroundColor: const Color(0xFFFDFBF7),
+      backgroundColor: const Color(0xFFF2F3F8),
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
       ),
@@ -483,7 +483,7 @@ class _ScriptPageState extends ConsumerState<ScriptPage> {
               width: 40,
               height: 4,
               decoration: BoxDecoration(
-                color: Color(0xFFA1887F),
+                color: Color(0xFF4A6572),
                 borderRadius: BorderRadius.circular(2),
               ),
             ),
@@ -516,7 +516,7 @@ class _ScriptPageState extends ConsumerState<ScriptPage> {
                 margin: const EdgeInsets.symmetric(horizontal: 16),
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
-                  color: const Color(0xFFF5F0EB),
+                  color: const Color(0xFFF2F3F8),
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: SingleChildScrollView(
@@ -526,7 +526,7 @@ class _ScriptPageState extends ConsumerState<ScriptPage> {
                     style: const TextStyle(
                       fontFamily: 'monospace',
                       fontSize: 13,
-                      color: Color(0xFF6D4C41),
+                      color: Color(0xFF536DFE),
                     ),
                   ),
                 ),
@@ -551,7 +551,7 @@ class _ScriptPageState extends ConsumerState<ScriptPage> {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        backgroundColor: const Color(0xFFFFF9F0),
+        backgroundColor: const Color(0xFFFFFFFF),
         title: Text(script == null ? '创建脚本' : '编辑脚本'),
         content: SingleChildScrollView(
           child: Column(
@@ -652,7 +652,7 @@ class _ScriptPageState extends ConsumerState<ScriptPage> {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        backgroundColor: const Color(0xFFFFF9F0),
+        backgroundColor: const Color(0xFFFFFFFF),
         title: const Text('删除脚本'),
         content: Text('确定要删除 "${script.name}" 吗？'),
         actions: [
@@ -809,7 +809,7 @@ class _ScriptLogPageState extends ConsumerState<ScriptLogPage> {
       appBar: AppBar(
         title: const Row(
           children: [
-            Icon(Icons.receipt_long, color: Color(0xFF8D6E63)),
+            Icon(Icons.receipt_long, color: Color(0xFF3D5AFE)),
             SizedBox(width: 8),
             Text('脚本运行日志'),
           ],
@@ -825,7 +825,7 @@ class _ScriptLogPageState extends ConsumerState<ScriptLogPage> {
                     final confirm = await showDialog<bool>(
                       context: context,
                       builder: (context) => AlertDialog(
-                        backgroundColor: const Color(0xFFFFF9F0),
+                        backgroundColor: const Color(0xFFFFFFFF),
                         title: const Text('清空日志'),
                         content: const Text('确定要清空所有运行日志吗？'),
                         actions: [
@@ -857,13 +857,13 @@ class _ScriptLogPageState extends ConsumerState<ScriptLogPage> {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Icon(Icons.receipt_long, size: 64, color: Color(0xFFA1887F)),
+                  Icon(Icons.receipt_long, size: 64, color: Color(0xFF4A6572)),
                   SizedBox(height: 16),
-                  Text('暂无运行日志', style: TextStyle(color: Color(0xFFA1887F))),
+                  Text('暂无运行日志', style: TextStyle(color: Color(0xFF4A6572))),
                   SizedBox(height: 8),
                   Text(
                     '运行脚本后会自动保存日志',
-                    style: TextStyle(color: Color(0xFFA1887F), fontSize: 12),
+                    style: TextStyle(color: Color(0xFF4A6572), fontSize: 12),
                   ),
                 ],
               ),
@@ -898,7 +898,7 @@ class _ScriptLogPageState extends ConsumerState<ScriptLogPage> {
 
     return Card(
       margin: const EdgeInsets.only(bottom: 8),
-      color: const Color(0xFFFFF9F0),
+      color: const Color(0xFFFFFFFF),
       child: InkWell(
         onTap: () {
           _showLogDetail(log);
@@ -913,7 +913,7 @@ class _ScriptLogPageState extends ConsumerState<ScriptLogPage> {
                 children: [
                   const Icon(
                     Icons.description,
-                    color: Color(0xFF8D6E63),
+                    color: Color(0xFF3D5AFE),
                     size: 20,
                   ),
                   const SizedBox(width: 8),
@@ -947,14 +947,14 @@ class _ScriptLogPageState extends ConsumerState<ScriptLogPage> {
                 children: [
                   Text(
                     '脚本: $scriptName',
-                    style: const TextStyle(color: Color(0xFFA1887F), fontSize: 12),
+                    style: const TextStyle(color: Color(0xFF4A6572), fontSize: 12),
                   ),
                   const Spacer(),
-                  Icon(Icons.access_time, size: 12, color: Color(0xFFA1887F)),
+                  Icon(Icons.access_time, size: 12, color: Color(0xFF4A6572)),
                   const SizedBox(width: 4),
                   Text(
                     formattedTime,
-                    style: TextStyle(color: Color(0xFFA1887F), fontSize: 12),
+                    style: TextStyle(color: Color(0xFF4A6572), fontSize: 12),
                   ),
                 ],
               ),
@@ -963,7 +963,7 @@ class _ScriptLogPageState extends ConsumerState<ScriptLogPage> {
                 width: double.infinity,
                 padding: const EdgeInsets.all(8),
                 decoration: BoxDecoration(
-                  color: const Color(0xFFF5F0EB),
+                  color: const Color(0xFFF2F3F8),
                   borderRadius: BorderRadius.circular(6),
                 ),
                 child: Text(
@@ -973,7 +973,7 @@ class _ScriptLogPageState extends ConsumerState<ScriptLogPage> {
                   style: const TextStyle(
                     fontFamily: 'monospace',
                     fontSize: 11,
-                    color: Color(0xFF6D4C41),
+                    color: Color(0xFF536DFE),
                   ),
                   maxLines: 3,
                   overflow: TextOverflow.ellipsis,
@@ -993,7 +993,7 @@ class _ScriptLogPageState extends ConsumerState<ScriptLogPage> {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
-      backgroundColor: const Color(0xFFFDFBF7),
+      backgroundColor: const Color(0xFFF2F3F8),
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
       ),
@@ -1009,7 +1009,7 @@ class _ScriptLogPageState extends ConsumerState<ScriptLogPage> {
               width: 40,
               height: 4,
               decoration: BoxDecoration(
-                color: Color(0xFFA1887F),
+                color: Color(0xFF4A6572),
                 borderRadius: BorderRadius.circular(2),
               ),
             ),
@@ -1044,7 +1044,7 @@ class _ScriptLogPageState extends ConsumerState<ScriptLogPage> {
                 margin: const EdgeInsets.symmetric(horizontal: 16),
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
-                  color: const Color(0xFFF5F0EB),
+                  color: const Color(0xFFF2F3F8),
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: SingleChildScrollView(
@@ -1054,7 +1054,7 @@ class _ScriptLogPageState extends ConsumerState<ScriptLogPage> {
                     style: const TextStyle(
                       fontFamily: 'monospace',
                       fontSize: 13,
-                      color: Color(0xFF6D4C41),
+                      color: Color(0xFF536DFE),
                     ),
                   ),
                 ),

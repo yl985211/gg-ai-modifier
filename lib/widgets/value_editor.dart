@@ -98,7 +98,7 @@ class _ValueEditorState extends State<ValueEditor> {
             padding: const EdgeInsets.only(bottom: 4),
             child: Text(
               widget.label!,
-              style: const TextStyle(fontSize: 12, color: Color(0xFFA1887F)),
+              style: const TextStyle(fontSize: 12, color: Color(0xFF4A6572)),
             ),
           ),
         Row(
@@ -107,7 +107,7 @@ class _ValueEditorState extends State<ValueEditor> {
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
               decoration: BoxDecoration(
-                color: const Color(0xFF8D6E63).withOpacity(0.2),
+                color: const Color(0xFF3D5AFE).withOpacity(0.2),
                 borderRadius: BorderRadius.circular(8),
               ),
               child: Text(
@@ -115,7 +115,7 @@ class _ValueEditorState extends State<ValueEditor> {
                 style: const TextStyle(
                   fontSize: 12,
                   fontWeight: FontWeight.bold,
-                  color: Color(0xFF8D6E63),
+                  color: Color(0xFF3D5AFE),
                 ),
               ),
             ),

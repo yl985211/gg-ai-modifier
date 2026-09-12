@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:http/http.dart' as http;
+import 'package:google_generative_ai/google_generative_ai.dart' as genai;
 import '../../core/llm/llm_config.dart';
 import '../../core/llm/prompt_builder.dart';
 import '../../main.dart';
@@ -186,7 +187,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        backgroundColor: const Color(0xFFFFF9F0),
+        backgroundColor: const Color(0xFFFFFFFF),
         title: const Text('添加自定义模型'),
         content: SingleChildScrollView(
           child: Column(
@@ -268,6 +269,100 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
     );
   }
 
+  /// 显示删除自定义预设对话框
+  void _showDeleteCustomPresetsDialog() {
+    // 如果没有自定义预设，显示提示
+    if (_customPresets.isEmpty) {
+      showDialog(
+        context: context,
+        builder: (context) => AlertDialog(
+          backgroundColor: const Color(0xFFFFFFFF),
+          title: const Text('删除自定义模型'),
+          content: const Text('暂无自定义模型可删除。\n\n请点击"+ 添加自定义"按钮添加自定义模型。'),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('知道了'),
+            ),
+          ],
+        ),
+      );
+      return;
+    }
+
+    final selectedToDelete = <String>{};
+
+    showDialog(
+      context: context,
+      builder: (context) => StatefulBuilder(
+        builder: (context, setDialogState) => AlertDialog(
+          backgroundColor: const Color(0xFFFFFFFF),
+          title: const Text('删除自定义模型'),
+          content: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: _customPresets.entries.map((entry) {
+                final displayName = entry.key.replaceFirst('custom_', '');
+                return CheckboxListTile(
+                  title: Text(displayName),
+                  subtitle: Text(
+                    entry.value.model,
+                    style: const TextStyle(fontSize: 12, color: Color(0xFF4A6572)),
+                  ),
+                  value: selectedToDelete.contains(entry.key),
+                  onChanged: (value) {
+                    setDialogState(() {
+                      if (value == true) {
+                        selectedToDelete.add(entry.key);
+                      } else {
+                        selectedToDelete.remove(entry.key);
+                      }
+                    });
+                  },
+                  activeColor: const Color(0xFFE53935),
+                );
+              }).toList(),
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('取消'),
+            ),
+            ElevatedButton(
+              onPressed: selectedToDelete.isEmpty
+                  ? null
+                  : () {
+                      final deletedCurrentPreset = selectedToDelete.contains(_selectedPreset);
+                      setState(() {
+                        for (final key in selectedToDelete) {
+                          _customPresets.remove(key);
+                        }
+                      });
+                      _saveCustomPresets();
+                      // 如果删除的是当前选中的预设，自动切换到 DeepSeek 并保存
+                      if (deletedCurrentPreset) {
+                        _applyPreset('deepseek');
+                        _saveConfig();
+                      }
+                      Navigator.pop(context);
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text('✅ 已删除 ${selectedToDelete.length} 个自定义模型'),
+                        ),
+                      );
+                    },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFFE53935),
+              ),
+              child: const Text('删除'),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   void _saveConfig() {
     final config = LlmConfig(
       baseUrl: _baseUrlController.text.trim(),
@@ -278,6 +373,13 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
     );
 
     ref.read(llmConfigProvider.notifier).state = config;
+
+    // 如果当前选择的是自定义预设，同步更新 _customPresets 中的配置
+    if (_selectedPreset.startsWith('custom_') &&
+        _customPresets.containsKey(_selectedPreset)) {
+      _customPresets[_selectedPreset] = config;
+      _saveCustomPresets();
+    }
 
     // 持久化保存到 Hive
     final storage = ref.read(storageServiceProvider);
@@ -327,8 +429,39 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
       return;
     }
 
+    // 检测是否是 Gemini API
+    final isGemini = baseUrl.contains('generativelanguage.googleapis.com');
+
     try {
-      final uri = Uri.parse('$baseUrl/chat/completions');
+      if (isGemini) {
+        // Gemini 使用官方 SDK 测试
+        await _testGeminiConnection(apiKey, model);
+      } else {
+        // OpenAI 兼容 API
+        await _testOpenAIConnection(baseUrl, apiKey, model);
+      }
+    } catch (e) {
+      setState(() {
+        if (e.toString().contains('TimeoutException')) {
+          _testResult = '❌ 连接超时，请检查网络';
+        } else if (e.toString().contains('SocketException')) {
+          _testResult = '❌ 网络不可用，请检查网络连接\n\n如果使用了 VPN，请确保 VPN 已开启';
+        } else {
+          _testResult = '❌ 连接失败: $e';
+        }
+      });
+    } finally {
+      setState(() {
+        _isTesting = false;
+      });
+    }
+  }
+
+  /// 测试 Gemini API 连接（使用 OpenAI 兼容接口）
+  Future<void> _testGeminiConnection(String apiKey, String model) async {
+    try {
+      // 使用 OpenAI 兼容接口: /v1beta/openai/chat/completions
+      final uri = Uri.parse('https://generativelanguage.googleapis.com/v1beta/openai/chat/completions');
       final response = await http
           .post(
             uri,
@@ -350,25 +483,24 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
         final json = jsonDecode(response.body);
         if (json['choices'] != null) {
           setState(() {
-            _testResult = '✅ 连接成功！模型: $model';
+            _testResult = '✅ Gemini 连接成功！模型: $model';
           });
         } else {
           setState(() {
-            _testResult = '⚠️ 响应格式异常: ${response.body.substring(0, 100)}';
+            _testResult = '⚠️ Gemini 响应格式异常';
           });
         }
-      } else if (response.statusCode == 401) {
-        setState(() {
-          _testResult = '❌ API Key 无效 (401)';
-        });
       } else if (response.statusCode == 404) {
         setState(() {
-          _testResult = '❌ 模型不存在或 API 地址错误 (404)';
+          _testResult = '❌ 404 错误\n\nURL: ${uri.toString()}\n\n响应: ${response.body.substring(0, response.body.length > 200 ? 200 : response.body.length)}';
+        });
+      } else if (response.statusCode == 401 || response.statusCode == 403) {
+        setState(() {
+          _testResult = '❌ API Key 无效 (${response.statusCode})';
         });
       } else {
         setState(() {
-          _testResult =
-              '❌ 请求失败 (${response.statusCode}): ${response.body.substring(0, response.body.length > 100 ? 100 : response.body.length)}';
+          _testResult = '❌ 请求失败 (${response.statusCode}): ${response.body.substring(0, response.body.length > 200 ? 200 : response.body.length)}';
         });
       }
     } catch (e) {
@@ -376,14 +508,57 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
         if (e.toString().contains('TimeoutException')) {
           _testResult = '❌ 连接超时，请检查网络';
         } else if (e.toString().contains('SocketException')) {
-          _testResult = '❌ 网络不可用，请检查网络连接';
+          _testResult = '❌ 网络不可用\n\n如果使用了 VPN，请确保 VPN 已开启';
         } else {
           _testResult = '❌ 连接失败: $e';
         }
       });
-    } finally {
+    }
+  }
+
+  /// 测试 OpenAI 兼容 API 连接
+  Future<void> _testOpenAIConnection(String baseUrl, String apiKey, String model) async {
+    final uri = Uri.parse('$baseUrl/chat/completions');
+    final response = await http
+        .post(
+          uri,
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer $apiKey',
+          },
+          body: jsonEncode({
+            'model': model,
+            'messages': [
+              {'role': 'user', 'content': 'Hi'},
+            ],
+            'max_tokens': 5,
+          }),
+        )
+        .timeout(const Duration(seconds: 15));
+
+    if (response.statusCode == 200) {
+      final json = jsonDecode(response.body);
+      if (json['choices'] != null) {
+        setState(() {
+          _testResult = '✅ 连接成功！模型: $model';
+        });
+      } else {
+        setState(() {
+          _testResult = '⚠️ 响应格式异常: ${response.body.substring(0, 100)}';
+        });
+      }
+    } else if (response.statusCode == 401) {
       setState(() {
-        _isTesting = false;
+        _testResult = '❌ API Key 无效 (401)';
+      });
+    } else if (response.statusCode == 404) {
+      setState(() {
+        _testResult = '❌ 模型不存在或 API 地址错误 (404)';
+      });
+    } else {
+      setState(() {
+        _testResult =
+            '❌ 请求失败 (${response.statusCode}): ${response.body.substring(0, response.body.length > 100 ? 100 : response.body.length)}';
       });
     }
   }
@@ -394,7 +569,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
       appBar: AppBar(
         title: const Row(
           children: [
-            Icon(Icons.settings, color: Color(0xFF8D6E63)),
+            Icon(Icons.settings, color: Color(0xFF3D5AFE)),
             SizedBox(width: 8),
             Text('设置'),
           ],
@@ -564,13 +739,13 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
           // GitHub 开源地址
           Card(
             child: ListTile(
-              leading: const Icon(Icons.code, color: Color(0xFF8D6E63)),
+              leading: const Icon(Icons.code, color: Color(0xFF3D5AFE)),
               title: const Text('GitHub 开源地址'),
               subtitle: const Text(
                 'https://github.com/yl985211/gg-ai-modifier',
-                style: TextStyle(fontSize: 12, color: Color(0xFF8D6E63)),
+                style: TextStyle(fontSize: 12, color: Color(0xFF3D5AFE)),
               ),
-              trailing: const Icon(Icons.open_in_new, color: Color(0xFFA1887F)),
+              trailing: const Icon(Icons.open_in_new, color: Color(0xFF4A6572)),
               onTap: () async {
                 const url = 'https://github.com/yl985211/gg-ai-modifier';
                 try {
@@ -617,7 +792,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: const Color(0xFFFFF9F0),
+        color: const Color(0xFFFFFFFF),
         borderRadius: BorderRadius.circular(8),
       ),
       child: Column(
@@ -625,7 +800,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
         children: [
           const Text(
             '选择 API 提供商',
-            style: TextStyle(fontSize: 13, color: Color(0xFFA1887F)),
+            style: TextStyle(fontSize: 13, color: Color(0xFF4A6572)),
           ),
           const SizedBox(height: 8),
           Wrap(
@@ -639,12 +814,13 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
                   'deepseek-reasoner': 'DeepSeek R1',
                   'xiaomi-mimo': '小米 MiMo',
                   'openai': 'OpenAI',
+                  'gemini': 'Gemini',
                 };
                 return ChoiceChip(
                   label: Text(labels[entry.key] ?? entry.key),
                   selected: isSelected,
                   onSelected: (_) => _applyPreset(entry.key),
-                  selectedColor: const Color(0xFF8D6E63),
+                  selectedColor: const Color(0xFF3D5AFE),
                 );
               }),
               ..._customPresets.entries.map((entry) {
@@ -654,14 +830,20 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
                   label: Text(displayName),
                   selected: isSelected,
                   onSelected: (_) => _applyPreset(entry.key),
-                  selectedColor: const Color(0xFF6D4C41),
+                  selectedColor: const Color(0xFF536DFE),
                 );
               }),
               ActionChip(
                 label: const Text('+ 添加自定义'),
                 onPressed: () => _showAddCustomPresetDialog(),
-                backgroundColor: const Color(0xFFE8DDD5),
-                labelStyle: const TextStyle(color: Color(0xFFA1887F)),
+                backgroundColor: const Color(0xFFE8EAF6),
+                labelStyle: const TextStyle(color: Color(0xFF4A6572)),
+              ),
+              ActionChip(
+                label: const Text('删除自定义'),
+                onPressed: () => _showDeleteCustomPresetsDialog(),
+                backgroundColor: const Color(0xFFFFEBEE),
+                labelStyle: const TextStyle(color: Color(0xFFE53935)),
               ),
             ],
           ),
@@ -711,7 +893,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
                       : Icons.security,
                   color: _rootStatus.contains('✅')
                       ? Colors.green
-                      : const Color(0xFF8D6E63),
+                      : const Color(0xFF3D5AFE),
                 ),
                 const SizedBox(width: 8),
                 Text(
@@ -723,7 +905,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
             const SizedBox(height: 8),
             const Text(
               '需要 Root 权限才能读写其他进程内存。\n点击下方按钮会触发 Magisk 授权弹窗。',
-              style: TextStyle(fontSize: 12, color: Color(0xFFA1887F)),
+              style: TextStyle(fontSize: 12, color: Color(0xFF4A6572)),
             ),
             const SizedBox(height: 12),
             SizedBox(
@@ -802,7 +984,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
           children: [
             Row(
               children: [
-                const Icon(Icons.bubble_chart, color: Color(0xFF8D6E63)),
+                const Icon(Icons.bubble_chart, color: Color(0xFF3D5AFE)),
                 const SizedBox(width: 8),
                 const Expanded(
                   child: Text(
@@ -813,19 +995,19 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
                 Switch(
                   value: _overlayEnabled,
                   onChanged: _toggleOverlay,
-                  activeColor: const Color(0xFF8D6E63),
+                  activeColor: const Color(0xFF3D5AFE),
                 ),
               ],
             ),
             const SizedBox(height: 8),
             const Text(
               '开启后会在屏幕上显示一个悬浮球，点击可快速打开 AI 对话、内存搜索等功能，无需切换窗口。',
-              style: TextStyle(fontSize: 12, color: Color(0xFFA1887F)),
+              style: TextStyle(fontSize: 12, color: Color(0xFF4A6572)),
             ),
             const SizedBox(height: 12),
             Row(
               children: [
-                const Icon(Icons.autorenew, size: 16, color: Color(0xFFA1887F)),
+                const Icon(Icons.autorenew, size: 16, color: Color(0xFF4A6572)),
                 const SizedBox(width: 8),
                 const Expanded(
                   child: Text('启动时自动开启悬浮窗', style: TextStyle(fontSize: 13)),
@@ -833,7 +1015,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
                 Switch(
                   value: _autoStartOverlay,
                   onChanged: _toggleAutoStart,
-                  activeColor: const Color(0xFF8D6E63),
+                  activeColor: const Color(0xFF3D5AFE),
                 ),
               ],
             ),
@@ -852,7 +1034,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
           children: [
             const Row(
               children: [
-                Icon(Icons.data_usage, color: Color(0xFF8D6E63)),
+                Icon(Icons.data_usage, color: Color(0xFF3D5AFE)),
                 SizedBox(width: 8),
                 Expanded(
                   child: Text(
@@ -866,7 +1048,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
             const Text(
               '限制发送给 AI 的搜索结果数量，节省 Token 并防止上下文溢出。'
               '当结果过多时，仅发送前 N 条样本和统计数据。',
-              style: TextStyle(fontSize: 12, color: Color(0xFFA1887F)),
+              style: TextStyle(fontSize: 12, color: Color(0xFF4A6572)),
             ),
             const SizedBox(height: 12),
             Wrap(
@@ -887,7 +1069,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
                       SnackBar(content: Text('✅ AI 读取深度已设为: ${depth.label}')),
                     );
                   },
-                  selectedColor: const Color(0xFF8D6E63),
+                  selectedColor: const Color(0xFF3D5AFE),
                 );
               }).toList(),
             ),
@@ -905,7 +1087,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
   }) {
     return Card(
       child: ListTile(
-        leading: Icon(icon, color: const Color(0xFF8D6E63)),
+        leading: Icon(icon, color: const Color(0xFF3D5AFE)),
         title: Text(title),
         subtitle: Text(subtitle, style: const TextStyle(fontSize: 12)),
         trailing: trailing,

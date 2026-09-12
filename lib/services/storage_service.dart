@@ -11,6 +11,7 @@ import '../core/models/chat_session.dart';
 import '../core/models/script_model.dart';
 import '../core/models/memory_result.dart';
 import '../core/models/bookmark_model.dart';
+import '../core/models/skill_model.dart';
 
 /// 存储服务
 class StorageService {
@@ -21,6 +22,7 @@ class StorageService {
   static const String _favoritesBox = 'favorites';
   static const String _bookmarksBox = 'bookmarks';
   static const String _settingsBox = 'settings';
+  static const String _skillsBox = 'skills';
 
   bool _isInitialized = false;
   bool get isInitialized => _isInitialized;
@@ -37,6 +39,7 @@ class StorageService {
     await Hive.openBox(_favoritesBox);
     await Hive.openBox(_bookmarksBox);
     await Hive.openBox(_settingsBox);
+    await Hive.openBox(_skillsBox);
 
     _isInitialized = true;
   }
@@ -302,6 +305,53 @@ class StorageService {
   Future<void> deleteSetting(String key) async {
     final box = Hive.box(_settingsBox);
     await box.delete(key);
+  }
+
+  // ==================== Skill 管理 ====================
+
+  /// 保存 Skill
+  Future<void> saveSkill(SkillModel skill) async {
+    final box = Hive.box(_skillsBox);
+    await box.put(skill.id, jsonEncode(skill.toJson()));
+  }
+
+  /// 获取所有 Skill
+  List<SkillModel> getAllSkills() {
+    final box = Hive.box(_skillsBox);
+    return box.values.map((item) {
+      final json = item as String;
+      return SkillModel.fromJson(jsonDecode(json) as Map<String, dynamic>);
+    }).toList();
+  }
+
+  /// 获取已启用的 Skill 列表
+  List<SkillModel> getEnabledSkills() {
+    return getAllSkills().where((skill) => skill.isEnabled).toList();
+  }
+
+  /// 获取单个 Skill
+  SkillModel? getSkill(String id) {
+    final box = Hive.box(_skillsBox);
+    final json = box.get(id) as String?;
+    if (json == null) return null;
+    return SkillModel.fromJson(jsonDecode(json) as Map<String, dynamic>);
+  }
+
+  /// 删除 Skill
+  Future<void> deleteSkill(String id) async {
+    final box = Hive.box(_skillsBox);
+    await box.delete(id);
+  }
+
+  /// 切换 Skill 启用状态
+  Future<void> toggleSkill(String id) async {
+    final skill = getSkill(id);
+    if (skill == null) return;
+    final updated = skill.copyWith(
+      isEnabled: !skill.isEnabled,
+      updatedAt: DateTime.now(),
+    );
+    await saveSkill(updated);
   }
 
   /// 释放资源

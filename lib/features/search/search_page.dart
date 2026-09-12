@@ -272,7 +272,7 @@ class _SearchPageState extends ConsumerState<SearchPage> {
   ) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-      color: const Color(0xFFFDFBF7),
+      color: const Color(0xFFF2F3F8),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
@@ -298,14 +298,14 @@ class _SearchPageState extends ConsumerState<SearchPage> {
                         ? '${attachedProcess.packageName} (PID:${attachedProcess.pid})'
                         : '未附加进程 - 点击选择',
                     style: TextStyle(
-                      color: attachedProcess != null ? Colors.green : Color(0xFFA1887F),
+                      color: attachedProcess != null ? Colors.green : Color(0xFF4A6572),
                       fontSize: 12,
                     ),
                     overflow: TextOverflow.ellipsis,
                   ),
                 ),
                 if (attachedProcess != null)
-                  const Icon(Icons.arrow_forward_ios, size: 12, color: Color(0xFFA1887F)),
+                  const Icon(Icons.arrow_forward_ios, size: 12, color: Color(0xFF4A6572)),
               ],
             ),
           ),
@@ -330,7 +330,7 @@ class _SearchPageState extends ConsumerState<SearchPage> {
                     onSelected: (_) {
                       ref.read(searchTypeProvider.notifier).state = type;
                     },
-                    selectedColor: const Color(0xFF8D6E63),
+                    selectedColor: const Color(0xFF3D5AFE),
                     visualDensity: VisualDensity.compact,
                     materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
                     labelPadding: const EdgeInsets.symmetric(horizontal: 4),
@@ -343,16 +343,16 @@ class _SearchPageState extends ConsumerState<SearchPage> {
                 height: 32,
                 padding: const EdgeInsets.symmetric(horizontal: 8),
                 decoration: BoxDecoration(
-                  color: const Color(0xFFFFF9F0),
+                  color: const Color(0xFFFFFFFF),
                   borderRadius: BorderRadius.circular(16),
                 ),
                 child: DropdownButtonHideUnderline(
                   child: DropdownButton<DataType>(
                     value: dataType,
                     isDense: true,
-                    dropdownColor: const Color(0xFFFFF9F0),
+                    dropdownColor: const Color(0xFFFFFFFF),
                     style: const TextStyle(
-                      color: Color(0xFF8D6E63),
+                      color: Color(0xFF3D5AFE),
                       fontSize: 12,
                     ),
                     items: DataType.values
@@ -381,7 +381,7 @@ class _SearchPageState extends ConsumerState<SearchPage> {
   Widget _buildSearchInput(SearchType searchType, DataType dataType) {
     return Container(
       padding: const EdgeInsets.fromLTRB(12, 8, 12, 6),
-      color: const Color(0xFFFFF9F0),
+      color: const Color(0xFFFFFFFF),
       child: _buildInputByType(searchType),
     );
   }
@@ -406,7 +406,7 @@ class _SearchPageState extends ConsumerState<SearchPage> {
             ),
             const Padding(
               padding: EdgeInsets.symmetric(horizontal: 8),
-              child: Text('~', style: TextStyle(color: Color(0xFFA1887F))),
+              child: Text('~', style: TextStyle(color: Color(0xFF4A6572))),
             ),
             Expanded(
               child: TextField(
@@ -503,7 +503,7 @@ class _SearchPageState extends ConsumerState<SearchPage> {
           child: ElevatedButton(
             onPressed: _performSearch,
             style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFF8D6E63),
+              backgroundColor: const Color(0xFF3D5AFE),
               padding: const EdgeInsets.symmetric(horizontal: 16),
             ),
             child: const Icon(Icons.search, size: 20),
@@ -523,7 +523,7 @@ class _SearchPageState extends ConsumerState<SearchPage> {
             style: OutlinedButton.styleFrom(
               padding: const EdgeInsets.symmetric(horizontal: 12),
             ),
-            child: const Icon(Icons.refresh, size: 18, color: Color(0xFFA1887F)),
+            child: const Icon(Icons.refresh, size: 18, color: Color(0xFF4A6572)),
           ),
         ),
       ],
@@ -541,7 +541,7 @@ class _SearchPageState extends ConsumerState<SearchPage> {
           _selectedFuzzyComparison = value;
         });
       },
-      selectedColor: const Color(0xFF8D6E63),
+      selectedColor: const Color(0xFF3D5AFE),
       visualDensity: VisualDensity.compact,
       materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
       labelPadding: const EdgeInsets.symmetric(horizontal: 4),
@@ -557,19 +557,19 @@ class _SearchPageState extends ConsumerState<SearchPage> {
   ) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-      color: const Color(0xFFFDFBF7),
+      color: const Color(0xFFF2F3F8),
       child: Row(
         children: [
-          const Icon(Icons.list_alt, size: 16, color: Color(0xFF8D6E63)),
+          const Icon(Icons.list_alt, size: 16, color: Color(0xFF3D5AFE)),
           const SizedBox(width: 6),
           Text(
             '${results.length} 个结果',
-            style: const TextStyle(color: Color(0xFF3E2723), fontSize: 13, fontWeight: FontWeight.bold),
+            style: const TextStyle(color: Color(0xFF213333), fontSize: 13, fontWeight: FontWeight.bold),
           ),
           if (results.length > 100)
             const Text(
               ' (显示前100)',
-              style: TextStyle(color: Color(0xFFA1887F), fontSize: 11),
+              style: TextStyle(color: Color(0xFF4A6572), fontSize: 11),
             ),
           const Spacer(),
           // 折叠时显示快速搜索按钮
@@ -581,7 +581,7 @@ class _SearchPageState extends ConsumerState<SearchPage> {
                 icon: const Icon(Icons.search, size: 16),
                 label: const Text('搜索', style: TextStyle(fontSize: 12)),
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF8D6E63),
+                  backgroundColor: const Color(0xFF3D5AFE),
                   padding: const EdgeInsets.symmetric(horizontal: 12),
                 ),
               ),
@@ -596,7 +596,7 @@ class _SearchPageState extends ConsumerState<SearchPage> {
                 style: OutlinedButton.styleFrom(
                   padding: const EdgeInsets.symmetric(horizontal: 8),
                 ),
-                child: const Icon(Icons.tune, size: 16, color: Color(0xFFA1887F)),
+                child: const Icon(Icons.tune, size: 16, color: Color(0xFF4A6572)),
               ),
             ),
           ],
@@ -614,12 +614,12 @@ class _SearchPageState extends ConsumerState<SearchPage> {
           Icon(
             attachedProcess == null ? Icons.link_off : Icons.search_off,
             size: 48,
-            color: Color(0xFFA1887F),
+            color: Color(0xFF4A6572),
           ),
           const SizedBox(height: 12),
           Text(
             attachedProcess == null ? '请先附加游戏进程' : '输入数值开始搜索',
-            style: const TextStyle(color: Color(0xFFA1887F), fontSize: 14),
+            style: const TextStyle(color: Color(0xFF4A6572), fontSize: 14),
           ),
         ],
       ),
@@ -645,7 +645,7 @@ class _SearchPageState extends ConsumerState<SearchPage> {
   Widget _buildCompactResultItem(MemoryResult result) {
     return Card(
       margin: const EdgeInsets.symmetric(vertical: 2),
-      color: const Color(0xFFFDFBF7),
+      color: const Color(0xFFF2F3F8),
       child: InkWell(
         onTap: () => _showEditDialog(result),
         borderRadius: BorderRadius.circular(8),
@@ -657,10 +657,10 @@ class _SearchPageState extends ConsumerState<SearchPage> {
               Icon(
                 result.isFrozen ? Icons.lock : Icons.memory,
                 color: result.isFrozen
-                    ? const Color(0xFF6D4C41)
+                    ? const Color(0xFF536DFE)
                     : result.isFavorite
                         ? Colors.amber
-                        : Color(0xFFA1887F),
+                        : Color(0xFF4A6572),
                 size: 18,
               ),
               const SizedBox(width: 10),
@@ -672,7 +672,7 @@ class _SearchPageState extends ConsumerState<SearchPage> {
                   style: const TextStyle(
                     fontFamily: 'monospace',
                     fontSize: 12,
-                    color: Color(0xFF8D6E63),
+                    color: Color(0xFF3D5AFE),
                   ),
                 ),
               ),
@@ -690,12 +690,12 @@ class _SearchPageState extends ConsumerState<SearchPage> {
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                 decoration: BoxDecoration(
-                  color: const Color(0xFFFFF9F0),
+                  color: const Color(0xFFFFFFFF),
                   borderRadius: BorderRadius.circular(4),
                 ),
                 child: Text(
                   result.type.displayName,
-                  style: const TextStyle(fontSize: 10, color: Color(0xFFA1887F)),
+                  style: const TextStyle(fontSize: 10, color: Color(0xFF4A6572)),
                 ),
               ),
               const SizedBox(width: 4),
@@ -737,7 +737,7 @@ class _SearchPageState extends ConsumerState<SearchPage> {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        backgroundColor: const Color(0xFFFFF9F0),
+        backgroundColor: const Color(0xFFFFFFFF),
         title: const Text('修改内存值'),
         content: Column(
           mainAxisSize: MainAxisSize.min,
@@ -748,7 +748,7 @@ class _SearchPageState extends ConsumerState<SearchPage> {
               style: const TextStyle(
                 fontFamily: 'monospace',
                 fontSize: 12,
-                color: Color(0xFF8D6E63),
+                color: Color(0xFF3D5AFE),
               ),
             ),
             const SizedBox(height: 12),
@@ -801,7 +801,7 @@ class _SearchPageState extends ConsumerState<SearchPage> {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        backgroundColor: const Color(0xFFFFF9F0),
+        backgroundColor: const Color(0xFFFFFFFF),
         title: const Text('冻结内存值'),
         content: Column(
           mainAxisSize: MainAxisSize.min,
@@ -812,7 +812,7 @@ class _SearchPageState extends ConsumerState<SearchPage> {
               style: const TextStyle(
                 fontFamily: 'monospace',
                 fontSize: 12,
-                color: Color(0xFF8D6E63),
+                color: Color(0xFF3D5AFE),
               ),
             ),
             const SizedBox(height: 12),

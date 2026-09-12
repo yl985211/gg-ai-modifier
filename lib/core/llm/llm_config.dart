@@ -56,8 +56,24 @@ class LlmConfig {
   /// 是否已配置
   bool get isConfigured => baseUrl.isNotEmpty && apiKey.isNotEmpty;
 
-  /// API 完整地址
+  /// 是否是 Google Gemini API
+  bool get isGemini => baseUrl.contains('generativelanguage.googleapis.com');
+
+  /// API 完整地址（Gemini 使用 OpenAI 兼容接口）
   String get chatEndpoint => '$baseUrl/chat/completions';
+
+  /// 流式 API 完整地址
+  String get streamEndpoint => '$baseUrl/chat/completions';
+
+  /// 获取实际请求的 baseUrl（Gemini 自动添加 /v1beta/openai/）
+  String get effectiveBaseUrl {
+    if (isGemini) {
+      // Gemini OpenAI 兼容接口: https://generativelanguage.googleapis.com/v1beta/openai/
+      final base = baseUrl.endsWith('/') ? baseUrl.substring(0, baseUrl.length - 1) : baseUrl;
+      return '$base/v1beta/openai';
+    }
+    return baseUrl;
+  }
 
   Map<String, dynamic> toJson() {
     return {
@@ -104,6 +120,11 @@ class LlmConfig {
       baseUrl: 'https://api.openai.com/v1',
       apiKey: '',
       model: 'gpt-4o',
+    ),
+    'gemini': LlmConfig(
+      baseUrl: 'https://generativelanguage.googleapis.com',
+      apiKey: '',
+      model: 'gemini-1.5-flash',
     ),
   };
 

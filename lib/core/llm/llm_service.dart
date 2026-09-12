@@ -1,6 +1,6 @@
 /// LLM API 调用服务
 ///
-/// 支持 OpenAI 兼容 API，包括流式响应和 Function Calling
+/// 支持 OpenAI 兼容 API（包括 Gemini OpenAI 兼容接口）
 
 import 'dart:async';
 import 'dart:convert';
@@ -23,9 +23,9 @@ class LlmService {
     required LlmConfig config,
     required FunctionHandler functionHandler,
     required PromptBuilder promptBuilder,
-  }) : _config = config,
-       _functionHandler = functionHandler,
-       _promptBuilder = promptBuilder {
+  })  : _config = config,
+        _functionHandler = functionHandler,
+        _promptBuilder = promptBuilder {
     promptBuilder.setModelName(config.model);
   }
 
@@ -39,6 +39,13 @@ class LlmService {
   void updateConfig(LlmConfig newConfig) {
     _config = newConfig;
     _promptBuilder.setModelName(newConfig.model);
+  }
+
+  /// 获取实际请求的 URL
+  String _getEndpoint() {
+    // Gemini 使用 OpenAI 兼容接口: /v1beta/openai/chat/completions
+    final base = _config.effectiveBaseUrl.trimRight('/');
+    return '$base/chat/completions';
   }
 
   /// 发送聊天消息 (非流式)
@@ -62,7 +69,6 @@ class LlmService {
         return ChatMessage.assistant('❌ 请求失败，请检查网络和 API 配置');
       }
 
-      // 检查是否有函数调用
       final choice = response['choices']?[0];
       if (choice == null) {
         return ChatMessage.assistant('❌ 响应格式错误');
@@ -72,26 +78,27 @@ class LlmService {
       final content = message['content'] as String? ?? '';
 
       // 检查是否有函数调用
-      if (message['function_call'] != null) {
-        final functionCall = message['function_call'];
-        final funcName = functionCall['name'] as String;
-        final funcArgs = jsonDecode(functionCall['arguments'] as String);
+      if (message['tool_calls'] != null) {
+        final toolCalls = message['tool_calls'] as List;
+        if (toolCalls.isNotEmpty) {
+          final toolCall = toolCalls[0];
+          final funcName = toolCall['function']['name'] as String;
+          final funcArgs = jsonDecode(toolCall['function']['arguments'] as String);
 
-        // 执行函数调用
-        final result = await _functionHandler.executeFunction(
-          funcName,
-          funcArgs,
-        );
+          // 执行函数调用
+          final result = await _functionHandler.executeFunction(funcName, funcArgs);
 
-        // 将结果返回给 LLM 生成总结
-        final summary = await _sendFunctionResult(
-          funcName: funcName,
-          arguments: funcArgs,
-          result: result,
-          history: history,
-        );
+          // 将结果返回给 LLM 生成总结
+          final summary = await _sendFunctionResult(
+            funcName: funcName,
+            arguments: funcArgs,
+            result: result,
+            history: history,
+            toolCallId: toolCall['id'] as String?,
+          );
 
-        return summary;
+          return summary;
+        }
       }
 
       return ChatMessage.assistant(content);
@@ -118,11 +125,10 @@ class LlmService {
         history: history,
       );
 
-      final request = http.Request('POST', Uri.parse(_config.chatEndpoint));
-      request.headers.addAll({
-        'Content-Type': 'application/json',
-        'Authorization': 'Bearer ${_config.apiKey}',
-      });
+      final endpoint = _getEndpoint();
+      final request = http.Request('POST', Uri.parse(endpoint));
+      request.headers['Content-Type'] = 'application/json';
+      request.headers['Authorization'] = 'Bearer ${_config.apiKey}';
       request.body = jsonEncode({
         'model': _config.model,
         'messages': messages,
@@ -142,14 +148,11 @@ class LlmService {
 
       String buffer = '';
 
-      await for (final chunk in streamedResponse.stream.transform(
-        utf8.decoder,
-      )) {
+      await for (final chunk in streamedResponse.stream.transform(utf8.decoder)) {
         buffer += chunk;
 
-        // 处理 SSE 格式
         final lines = buffer.split('\n');
-        buffer = lines.last; // 保留未完成的行
+        buffer = lines.last;
 
         for (int i = 0; i < lines.length - 1; i++) {
           final line = lines[i].trim();
@@ -163,16 +166,16 @@ class LlmService {
             final delta = json['choices']?[0]?['delta'];
 
             if (delta != null) {
-              // 检查函数调用
-              if (delta['function_call'] != null) {
-                // 处理函数调用 (流式)
-                final funcCall = delta['function_call'];
-                if (funcCall['name'] != null) {
-                  yield '\n\n🔧 正在执行: ${funcCall['name']}...\n';
+              if (delta['tool_calls'] != null) {
+                final toolCalls = delta['tool_calls'] as List;
+                if (toolCalls.isNotEmpty) {
+                  final funcName = toolCalls[0]['function']?['name'] as String?;
+                  if (funcName != null) {
+                    yield '\n\n🔧 正在执行: $funcName...\n';
+                  }
                 }
               }
 
-              // 普通文本内容
               final content = delta['content'] as String?;
               if (content != null) {
                 yield content;
@@ -196,6 +199,7 @@ class LlmService {
     required Map<String, dynamic> arguments,
     required dynamic result,
     required List<ChatMessage> history,
+    String? toolCallId,
   }) async {
     try {
       final messages = _promptBuilder.buildFunctionResultMessages(
@@ -204,6 +208,15 @@ class LlmService {
         result: result,
         history: history,
       );
+
+      // 添加工具调用结果消息
+      if (toolCallId != null) {
+        messages.add({
+          'role': 'tool',
+          'tool_call_id': toolCallId,
+          'content': result.toString(),
+        });
+      }
 
       final response = await _makeRequest(messages, stream: false);
 
@@ -225,8 +238,9 @@ class LlmService {
     bool stream = false,
   }) async {
     try {
+      final endpoint = _getEndpoint();
       final response = await _getClient().post(
-        Uri.parse(_config.chatEndpoint),
+        Uri.parse(endpoint),
         headers: {
           'Content-Type': 'application/json',
           'Authorization': 'Bearer ${_config.apiKey}',

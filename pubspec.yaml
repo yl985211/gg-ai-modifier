@@ -2,7 +2,7 @@ name: ai_gg666
 description: "AI 驱动的游戏内存修改器 - GG Modifier"
 publish_to: 'none'
 
-version: 3.0.0+3
+version: 5.0.0+5
 
 environment:
   sdk: ^3.11.5
@@ -38,6 +38,8 @@ dependencies:
 
   # WebView (用于 LaTeX/Mermaid 渲染)
   webview_flutter: ^4.10.0
+  google_generative_ai: ^0.4.7
+  file_picker: ^11.0.2
 
 dev_dependencies:
   flutter_test:

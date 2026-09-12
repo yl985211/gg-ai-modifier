@@ -4,16 +4,16 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'features/home/home_page.dart';
 
-/// 应用主题色（奶白色暖色系）
-const Color kPrimaryColor = Color(0xFF8D6E63);       // 柔和棕色
-const Color kSecondaryColor = Color(0xFF6D4C41);     // 辅助浅棕色
-const Color kBackgroundColor = Color(0xFFFDFBF7);    // 奶白色背景
-const Color kSurfaceColor = Color(0xFFFFF9F0);       // 浅奶黄卡片
-const Color kErrorColor = Color(0xFFA1887F);         // 柔和错误色
-const Color kTextPrimary = Color(0xFF3E2723);        // 深棕色文字
-const Color kTextSecondary = Color(0xFF8D6E63);      // 辅助文字
-const Color kAccentColor = Color(0xFF4E342E);        // 深色动作
-const Color kSplashColor = Color(0xFFFCEFDC);        // 激活浅黄色
+/// 应用主题色（深蓝科技风）
+const Color kPrimaryColor = Color(0xFF3D5AFE);       // 亮蓝色
+const Color kSecondaryColor = Color(0xFF536DFE);     // 辅助蓝
+const Color kBackgroundColor = Color(0xFFF2F3F8);    // 浅灰蓝背景
+const Color kSurfaceColor = Color(0xFFFFFFFF);       // 纯白卡片
+const Color kErrorColor = Color(0xFFFF5252);         // 红色错误色
+const Color kTextPrimary = Color(0xFF213333);        // 深青灰文字
+const Color kTextSecondary = Color(0xFF4A6572);      // 辅助灰蓝文字
+const Color kAccentColor = Color(0xFF304FFE);        // 深蓝动作
+const Color kSplashColor = Color(0xFFE8EAF6);        // 淡蓝紫激活色
 
 /// GG Modifier 主应用
 class GgModifierApp extends ConsumerWidget {
@@ -57,7 +57,11 @@ class GgModifierApp extends ConsumerWidget {
           fillColor: kSurfaceColor,
           border: OutlineInputBorder(
             borderRadius: BorderRadius.circular(12),
-            borderSide: BorderSide.none,
+            borderSide: const BorderSide(color: Colors.black, width: 1),
+          ),
+          enabledBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(12),
+            borderSide: const BorderSide(color: Colors.black, width: 1),
           ),
           focusedBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(12),

@@ -535,6 +535,18 @@ class MainActivity : FlutterActivity() {
                     }
                 }
 
+                // 同步 Skill 到 SharedPreferences（供悬浮窗读取）
+                "syncSkills" -> {
+                    try {
+                        val skillsJson = call.argument<String>("skills") ?: "[]"
+                        val prefs = getSharedPreferences("gg_skills", Context.MODE_PRIVATE)
+                        prefs.edit().putString("skills", skillsJson).apply()
+                        result.success(true)
+                    } catch (e: Exception) {
+                        result.error("SYNC_ERROR", e.message, null)
+                    }
+                }
+
                 // 导出对话记录到文件
                 "exportChatToFile" -> {
                     try {
@@ -564,6 +576,72 @@ class MainActivity : FlutterActivity() {
                             // Android 9 及以下使用传统方式
                             val externalDir = android.os.Environment.getExternalStorageDirectory()
                             val dir = java.io.File(externalDir, "AI-gg")
+                            if (!dir.exists()) dir.mkdirs()
+
+                            val file = java.io.File(dir, fileName)
+                            file.writeText(content, Charsets.UTF_8)
+
+                            android.media.MediaScannerConnection.scanFile(
+                                this@MainActivity,
+                                arrayOf(file.absolutePath),
+                                arrayOf("text/markdown"),
+                                null
+                            )
+                            result.success(file.absolutePath)
+                        }
+                    } catch (e: Exception) {
+                        result.error("EXPORT_ERROR", e.message, null)
+                    }
+                }
+
+                // 导出 Skill 到文件
+                "exportSkillToFile" -> {
+                    try {
+                        val fileName = call.argument<String>("fileName") ?: "skill.md"
+                        val content = call.argument<String>("content") ?: ""
+
+                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+                            // Android 11+ 使用 MediaStore API，路径为 Documents/AI-gg/skills
+                            val values = android.content.ContentValues().apply {
+                                put(android.provider.MediaStore.MediaColumns.DISPLAY_NAME, fileName)
+                                put(android.provider.MediaStore.MediaColumns.MIME_TYPE, "text/markdown")
+                                put(android.provider.MediaStore.MediaColumns.RELATIVE_PATH, "Documents/AI-gg/skills")
+                            }
+                            val uri = contentResolver.insert(
+                                android.provider.MediaStore.Files.getContentUri("external"),
+                                values
+                            )
+                            if (uri != null) {
+                                contentResolver.openOutputStream(uri)?.use { os ->
+                                    os.write(content.toByteArray(Charsets.UTF_8))
+                                }
+                                result.success("Documents/AI-gg/skills/$fileName")
+                            } else {
+                                result.error("EXPORT_ERROR", "无法创建文件", null)
+                            }
+                        } else if (Build.VERSION.SDK_INT == Build.VERSION_CODES.Q) {
+                            // Android 10 使用 MediaStore API，路径为 AI-gg/skills
+                            val values = android.content.ContentValues().apply {
+                                put(android.provider.MediaStore.MediaColumns.DISPLAY_NAME, fileName)
+                                put(android.provider.MediaStore.MediaColumns.MIME_TYPE, "text/markdown")
+                                put(android.provider.MediaStore.MediaColumns.RELATIVE_PATH, "AI-gg/skills")
+                            }
+                            val uri = contentResolver.insert(
+                                android.provider.MediaStore.Files.getContentUri("external"),
+                                values
+                            )
+                            if (uri != null) {
+                                contentResolver.openOutputStream(uri)?.use { os ->
+                                    os.write(content.toByteArray(Charsets.UTF_8))
+                                }
+                                result.success("AI-gg/skills/$fileName")
+                            } else {
+                                result.error("EXPORT_ERROR", "无法创建文件", null)
+                            }
+                        } else {
+                            // Android 9 及以下使用传统方式
+                            val externalDir = android.os.Environment.getExternalStorageDirectory()
+                            val dir = java.io.File(externalDir, "AI-gg/skills")
                             if (!dir.exists()) dir.mkdirs()
 
                             val file = java.io.File(dir, fileName)

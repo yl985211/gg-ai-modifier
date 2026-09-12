@@ -1,4 +1,4 @@
-/// 主页面 - 底部导航栏
+/// 主页面 - 底部导航栏 + 滑动翻页
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -21,18 +21,27 @@ class HomePage extends ConsumerStatefulWidget {
   ConsumerState<HomePage> createState() => _HomePageState();
 }
 
-class _HomePageState extends ConsumerState<HomePage> {
+class _HomePageState extends ConsumerState<HomePage> with TickerProviderStateMixin {
   static const _channel = MethodChannel('com.yl.aigg/bridge');
+  late PageController _pageController;
+  bool _isPageChanging = false;
 
   @override
   void initState() {
     super.initState();
+    _pageController = PageController();
     _channel.setMethodCallHandler(_handleMethodCall);
     _getInitialPage();
     // 检查是否有悬浮窗附加的进程
     WidgetsBinding.instance.addPostFrameCallback((_) {
       checkAttachedProcessOnStartup(ref);
     });
+  }
+
+  @override
+  void dispose() {
+    _pageController.dispose();
+    super.dispose();
   }
 
   Future<void> _getInitialPage() async {
@@ -58,7 +67,6 @@ class _HomePageState extends ConsumerState<HomePage> {
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    // 每次页面恢复时检查是否有待处理的跳转
     _checkPendingPage();
   }
 
@@ -75,19 +83,18 @@ class _HomePageState extends ConsumerState<HomePage> {
   void _navigateToPage(String page) {
     switch (page) {
       case 'home':
-        // 不切换页面，只确保应用在前台
         break;
       case 'chat':
-        ref.read(currentPageProvider.notifier).state = 0;
+        _animateToPage(0);
         break;
       case 'search':
-        ref.read(currentPageProvider.notifier).state = 1;
+        _animateToPage(1);
         break;
       case 'script':
-        ref.read(currentPageProvider.notifier).state = 2;
+        _animateToPage(2);
         break;
       case 'settings':
-        ref.read(currentPageProvider.notifier).state = 3;
+        _animateToPage(3);
         break;
       case 'process':
         Navigator.push(
@@ -98,46 +105,73 @@ class _HomePageState extends ConsumerState<HomePage> {
     }
   }
 
+  void _animateToPage(int index) {
+    ref.read(currentPageProvider.notifier).state = index;
+    _pageController.animateToPage(
+      index,
+      duration: const Duration(milliseconds: 300),
+      curve: Curves.easeInOut,
+    );
+  }
+
+  void _onPageChanged(int index) {
+    if (!_isPageChanging) {
+      ref.read(currentPageProvider.notifier).state = index;
+    }
+  }
+
+  void _onBottomNavTapped(int index) {
+    _isPageChanging = true;
+    ref.read(currentPageProvider.notifier).state = index;
+    _pageController.animateToPage(
+      index,
+      duration: const Duration(milliseconds: 300),
+      curve: Curves.easeInOut,
+    ).then((_) {
+      _isPageChanging = false;
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     final currentIndex = ref.watch(currentPageProvider);
 
     return Scaffold(
-      body: IndexedStack(
-        index: currentIndex,
+      body: PageView(
+        controller: _pageController,
+        onPageChanged: _onPageChanged,
+        physics: const BouncingScrollPhysics(),
         children: const [
           ChatPage(),
-          const PluginCenterPage(),
+          PluginCenterPage(),
           ScriptPage(),
           SettingsPage(),
         ],
       ),
       bottomNavigationBar: NavigationBar(
         selectedIndex: currentIndex,
-        onDestinationSelected: (index) {
-          ref.read(currentPageProvider.notifier).state = index;
-        },
-        backgroundColor: const Color(0xFFFDFBF7),
-        indicatorColor: const Color(0xFF8D6E63).withValues(alpha: 0.2),
+        onDestinationSelected: _onBottomNavTapped,
+        backgroundColor: const Color(0xFFF2F3F8),
+        indicatorColor: const Color(0xFF3D5AFE).withValues(alpha: 0.2),
         destinations: const [
           NavigationDestination(
             icon: Icon(Icons.history),
-            selectedIcon: Icon(Icons.history, color: Color(0xFF8D6E63)),
+            selectedIcon: Icon(Icons.history, color: Color(0xFF3D5AFE)),
             label: '对话记录',
           ),
           NavigationDestination(
             icon: Icon(Icons.extension),
-            selectedIcon: Icon(Icons.extension, color: Color(0xFF8D6E63)),
+            selectedIcon: Icon(Icons.extension, color: Color(0xFF3D5AFE)),
             label: '插件中心',
           ),
           NavigationDestination(
             icon: Icon(Icons.code),
-            selectedIcon: Icon(Icons.code, color: Color(0xFF8D6E63)),
+            selectedIcon: Icon(Icons.code, color: Color(0xFF3D5AFE)),
             label: '脚本库',
           ),
           NavigationDestination(
             icon: Icon(Icons.settings),
-            selectedIcon: Icon(Icons.settings, color: Color(0xFF8D6E63)),
+            selectedIcon: Icon(Icons.settings, color: Color(0xFF3D5AFE)),
             label: '设置',
           ),
         ],

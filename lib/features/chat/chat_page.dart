@@ -187,7 +187,7 @@ class _ChatPageState extends ConsumerState<ChatPage> {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        backgroundColor: const Color(0xFFFFF9F0),
+        backgroundColor: const Color(0xFFFFFFFF),
         title: const Text('清空所有记录'),
         content: const Text('确定要清空所有对话记录吗？此操作不可撤销。'),
         actions: [
@@ -335,7 +335,7 @@ class _ChatPageState extends ConsumerState<ChatPage> {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        backgroundColor: const Color(0xFFFFF9F0),
+        backgroundColor: const Color(0xFFFFFFFF),
         title: const Text('导出对话记录'),
         content: Column(
           mainAxisSize: MainAxisSize.min,
@@ -343,7 +343,7 @@ class _ChatPageState extends ConsumerState<ChatPage> {
             ListTile(
               leading: const Icon(
                 Icons.file_download,
-                color: Color(0xFF8D6E63),
+                color: Color(0xFF3D5AFE),
               ),
               title: const Text('导出全部到文件'),
               subtitle: Text('将 ${sessions.length} 个会话导出为 Markdown 文件'),
@@ -353,7 +353,7 @@ class _ChatPageState extends ConsumerState<ChatPage> {
               },
             ),
             ListTile(
-              leading: const Icon(Icons.checklist, color: Color(0xFF6D4C41)),
+              leading: const Icon(Icons.checklist, color: Color(0xFF536DFE)),
               title: const Text('选择导出'),
               subtitle: const Text('选择要导出的会话'),
               onTap: () {
@@ -406,7 +406,7 @@ class _ChatPageState extends ConsumerState<ChatPage> {
             ? Text('已选择 ${_selectedSessionIds.length} 项')
             : const Row(
                 children: [
-                  Icon(Icons.history, color: Color(0xFF8D6E63)),
+                  Icon(Icons.history, color: Color(0xFF3D5AFE)),
                   SizedBox(width: 8),
                   Text('对话记录'),
                 ],
@@ -505,10 +505,10 @@ class _ChatPageState extends ConsumerState<ChatPage> {
             margin: const EdgeInsets.all(12),
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              color: const Color(0xFFFFF9F0),
+              color: const Color(0xFFFFFFFF),
               borderRadius: BorderRadius.circular(12),
               border: Border.all(
-                color: const Color(0xFF8D6E63).withOpacity(0.3),
+                color: const Color(0xFF3D5AFE).withOpacity(0.3),
               ),
             ),
             child: Column(
@@ -518,7 +518,7 @@ class _ChatPageState extends ConsumerState<ChatPage> {
                   children: [
                     Icon(
                       Icons.info_outline,
-                      color: Color(0xFF8D6E63),
+                      color: Color(0xFF3D5AFE),
                       size: 20,
                     ),
                     SizedBox(width: 8),
@@ -526,7 +526,7 @@ class _ChatPageState extends ConsumerState<ChatPage> {
                       '使用说明',
                       style: TextStyle(
                         fontWeight: FontWeight.bold,
-                        color: Color(0xFF8D6E63),
+                        color: Color(0xFF3D5AFE),
                       ),
                     ),
                   ],
@@ -539,7 +539,7 @@ class _ChatPageState extends ConsumerState<ChatPage> {
                   '• 手动刷新：悬浮窗保存聊天后，点击右上角 🔄 刷新按钮\n'
                   '• 导出记录：仅支持单条记录导出为 Markdown 文件\n'
                   '• 导出路径：安卓10 /AI-gg/  安卓11+ /Documents/AI-gg/',
-                  style: TextStyle(color: Color(0xFFA1887F), fontSize: 13),
+                  style: TextStyle(color: Color(0xFF4A6572), fontSize: 13),
                 ),
                 const SizedBox(height: 12),
                 Row(
@@ -553,7 +553,7 @@ class _ChatPageState extends ConsumerState<ChatPage> {
                         icon: const Icon(Icons.chat_bubble, size: 16),
                         label: const Text('启动悬浮窗对话'),
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color(0xFF8D6E63),
+                          backgroundColor: const Color(0xFF3D5AFE),
                           padding: const EdgeInsets.symmetric(vertical: 8),
                         ),
                       ),
@@ -571,13 +571,13 @@ class _ChatPageState extends ConsumerState<ChatPage> {
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Icon(Icons.history, size: 64, color: Color(0xFFA1887F)),
+                        Icon(Icons.history, size: 64, color: Color(0xFF4A6572)),
                         SizedBox(height: 16),
-                        Text('暂无对话记录', style: TextStyle(color: Color(0xFFA1887F))),
+                        Text('暂无对话记录', style: TextStyle(color: Color(0xFF4A6572))),
                         SizedBox(height: 8),
                         Text(
                           '使用悬浮窗开始与 AI 对话',
-                          style: TextStyle(color: Color(0xFFA1887F), fontSize: 12),
+                          style: TextStyle(color: Color(0xFF4A6572), fontSize: 12),
                         ),
                       ],
                     ),
@@ -596,19 +596,19 @@ class _ChatPageState extends ConsumerState<ChatPage> {
           if (sessions.isNotEmpty)
             Container(
               padding: const EdgeInsets.all(12),
-              color: const Color(0xFFFFF9F0),
+              color: const Color(0xFFFFFFFF),
               child: Row(
                 children: [
-                  const Icon(Icons.analytics, size: 16, color: Color(0xFFA1887F)),
+                  const Icon(Icons.analytics, size: 16, color: Color(0xFF4A6572)),
                   const SizedBox(width: 8),
                   Text(
                     '共 ${sessions.length} 个对话会话',
-                    style: const TextStyle(color: Color(0xFFA1887F), fontSize: 12),
+                    style: const TextStyle(color: Color(0xFF4A6572), fontSize: 12),
                   ),
                   const Spacer(),
                   Text(
                     '最后更新: ${DateTime.now().toString().substring(0, 16)}',
-                    style: const TextStyle(color: Color(0xFFA1887F), fontSize: 12),
+                    style: const TextStyle(color: Color(0xFF4A6572), fontSize: 12),
                   ),
                 ],
               ),
@@ -624,8 +624,8 @@ class _ChatPageState extends ConsumerState<ChatPage> {
     return Card(
       margin: const EdgeInsets.only(bottom: 8),
       color: isSelected
-          ? const Color(0xFF8D6E63).withOpacity(0.15)
-          : const Color(0xFFFFF9F0),
+          ? const Color(0xFF3D5AFE).withOpacity(0.15)
+          : const Color(0xFFFFFFFF),
       child: ListTile(
         contentPadding: const EdgeInsets.all(16),
         leading: _isMultiSelectMode
@@ -640,18 +640,18 @@ class _ChatPageState extends ConsumerState<ChatPage> {
                     }
                   });
                 },
-                activeColor: const Color(0xFF8D6E63),
+                activeColor: const Color(0xFF3D5AFE),
               )
             : Container(
                 width: 48,
                 height: 48,
                 decoration: BoxDecoration(
-                  color: const Color(0xFF8D6E63).withOpacity(0.2),
+                  color: const Color(0xFF3D5AFE).withOpacity(0.2),
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: Icon(
                   _getSessionIcon(session.title),
-                  color: const Color(0xFF8D6E63),
+                  color: const Color(0xFF3D5AFE),
                   size: 24,
                 ),
               ),
@@ -665,29 +665,29 @@ class _ChatPageState extends ConsumerState<ChatPage> {
             const SizedBox(height: 4),
             Text(
               session.previewText,
-              style: const TextStyle(color: Color(0xFFA1887F), fontSize: 13),
+              style: const TextStyle(color: Color(0xFF4A6572), fontSize: 13),
               maxLines: 2,
               overflow: TextOverflow.ellipsis,
             ),
             const SizedBox(height: 8),
             Row(
               children: [
-                Icon(Icons.access_time, size: 14, color: Color(0xFFA1887F)),
+                Icon(Icons.access_time, size: 14, color: Color(0xFF4A6572)),
                 const SizedBox(width: 4),
                 Text(
                   session.formattedTime,
-                  style: TextStyle(color: Color(0xFFA1887F), fontSize: 12),
+                  style: TextStyle(color: Color(0xFF4A6572), fontSize: 12),
                 ),
                 const SizedBox(width: 16),
                 Icon(
                   Icons.chat_bubble_outline,
                   size: 14,
-                  color: Color(0xFFA1887F),
+                  color: Color(0xFF4A6572),
                 ),
                 const SizedBox(width: 4),
                 Text(
                   '${session.messages.length} 条消息',
-                  style: TextStyle(color: Color(0xFFA1887F), fontSize: 12),
+                  style: TextStyle(color: Color(0xFF4A6572), fontSize: 12),
                 ),
               ],
             ),
@@ -756,7 +756,7 @@ class _ChatPageState extends ConsumerState<ChatPage> {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        backgroundColor: const Color(0xFFFFF9F0),
+        backgroundColor: const Color(0xFFFFFFFF),
         title: const Text('删除对话'),
         content: Text('确定要删除 "${session.title}" 吗？'),
         actions: [
@@ -889,13 +889,13 @@ class _ChatSessionDetailPageState extends State<ChatSessionDetailPage> {
           Container(
             width: double.infinity,
             padding: const EdgeInsets.all(16),
-            color: const Color(0xFFFFF9F0),
+            color: const Color(0xFFFFFFFF),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(widget.session.summary, style: const TextStyle(color: Color(0xFFA1887F))),
+                Text(widget.session.summary, style: const TextStyle(color: Color(0xFF4A6572))),
                 const SizedBox(height: 4),
-                Text('创建时间: ${widget.session.createdAt.toString().substring(0, 19)}', style: const TextStyle(color: Color(0xFFA1887F), fontSize: 12)),
+                Text('创建时间: ${widget.session.createdAt.toString().substring(0, 19)}', style: const TextStyle(color: Color(0xFF4A6572), fontSize: 12)),
               ],
             ),
           ),
